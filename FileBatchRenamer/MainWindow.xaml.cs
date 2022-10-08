@@ -23,6 +23,7 @@ namespace FileBatchRenamer
         public MainWindow()
         {
             InitializeComponent();
+            this.DataContext = new MainWindowViewModel();
         }
     }
 }
