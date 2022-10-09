@@ -1,18 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-
+﻿
 namespace FileBatchRenamer
 {
     public class RenameItem
     {
-        public string FilePath { get; private set; }
-        public string SearchName { get; private set; }
-        public string NewName { get; private set; }
+        public string FilePath { get; set; }
+        public string SearchName { get; set; }
+        public string NewName { get; set; }
 
         public RenameItem()
         {
             FilePath = string.Empty;
+            SearchName = string.Empty;
+            NewName = string.Empty;
+        }
+
+        public RenameItem(string filePath)
+        {
+            FilePath = filePath;
             SearchName = string.Empty;
             NewName = string.Empty;
         }

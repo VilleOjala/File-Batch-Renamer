@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -58,11 +59,12 @@ namespace FileBatchRenamer
             RenameCommand = new RelayCommand(Rename);
 
             //ImportFolder();
+           // ImportCSV();
         }
 
         private void ImportFiles()
         {
-            var dialogue = new OpenFileDialog() { Multiselect = true};      
+            var dialogue = new OpenFileDialog() { Multiselect = true };      
             var result = dialogue.ShowDialog();
 
             if (result == true)
@@ -71,7 +73,7 @@ namespace FileBatchRenamer
 
                 //TODO: Update the GUI-shown list of imported files
 
-                Renamer.UpdateRenameItems();
+                Renamer.UpdateRenameItems(MatchingMethod);
                 this.RenameItems = new ObservableCollection<RenameItem>(Renamer.RenameItems);
             }
         }
@@ -87,7 +89,7 @@ namespace FileBatchRenamer
 
                 //TODO: Update the GUI-shown list of imported files
 
-                Renamer.UpdateRenameItems();
+                Renamer.UpdateRenameItems(MatchingMethod);
                 this.RenameItems = new ObservableCollection<RenameItem>(Renamer.RenameItems);
             }
         }
@@ -101,20 +103,52 @@ namespace FileBatchRenamer
         private void ClearFiles()
         {
             FileHandler.ClearFiles();
-            Renamer.UpdateRenameItems();
+            Renamer.UpdateRenameItems(MatchingMethod);
             RenameItems = new ObservableCollection<RenameItem>(Renamer.RenameItems);
         }
 
         private void ImportCSV()
         {
-            // Can't progress if duplicate search items exist
-            // Warn about problematic duplicate new names
+            if (CSVParser.IsImported)
+            {
+                string messageBoxText = "Placeholder"; //TODO
+                string caption = "Placeholder"; //TODO
+                var button = MessageBoxButton.OKCancel;
+                var icon = MessageBoxImage.Exclamation;
+                var defaultResult = MessageBoxResult.Cancel;
+                var messageBoxResult = MessageBox.Show(messageBoxText, caption, button, icon, defaultResult);
+
+                if (messageBoxResult == MessageBoxResult.Cancel)
+                    return;
+
+                CSVParser.ClearParseData();
+            }
+
+            string filter = "CSV files (*.csv)|*.csv";
+            var dialogue = new OpenFileDialog { Filter = filter };
+            var dialogueResult = dialogue.ShowDialog();
+
+            if (dialogueResult == true)
+            {
+                if (!CSVParser.ParseCSV(dialogue.FileName, out string errorMessage))
+                {
+                    string messageBoxText = errorMessage;
+                    string caption = "Placeholder"; //TODO
+                    var button = MessageBoxButton.OK;
+                    var icon = MessageBoxImage.Error;
+                    var defaultResult = MessageBoxResult.OK;
+                    MessageBox.Show(messageBoxText, caption, button, icon, defaultResult);
+                }
+            }
+
+            Renamer.UpdateRenameItems(MatchingMethod);
+            RenameItems = new ObservableCollection<RenameItem>(Renamer.RenameItems);
         }
 
         private void ClearCSV()
         {
             CSVParser.ClearParseData();
-            Renamer.UpdateRenameItems();
+            Renamer.UpdateRenameItems(MatchingMethod);
             RenameItems = new ObservableCollection<RenameItem>(Renamer.RenameItems);
         }
 
