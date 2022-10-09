@@ -13,6 +13,7 @@ namespace FileBatchRenamer
 
         }
 
+        //TODO: Also should produce a log of all the seteps
         public static void Rename()
         {
 

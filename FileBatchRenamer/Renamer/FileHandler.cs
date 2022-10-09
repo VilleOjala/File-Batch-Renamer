@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Diagnostics;
 
 namespace FileBatchRenamer
 {
@@ -9,19 +10,55 @@ namespace FileBatchRenamer
     {
         public static HashSet<string> ImportedFiles { get; private set; } = new HashSet<string>();
 
-        public static void ImportFile(string filePath)
+        public static void ImportFiles(string[] files)
         {
-            if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath) || ImportedFiles.Contains(filePath))
+            if (files == null)
                 return;
 
-            ImportedFiles.Add(filePath);
+            foreach (var file in files)
+            {
+                if (!File.Exists(file))
+                {
+                    //TODO: Error message
+                    continue;
+                } 
+
+                if (ImportedFiles.Contains(file))
+                {
+                    //TODO: Notify about trying to import the same file twice
+                    continue;
+                }
+
+                ImportedFiles.Add(file);
+            }
+        }
+
+        public static void ImportFolder(string path)
+        {
+            if (string.IsNullOrEmpty(path))
+                return;
+
+            if (!Directory.Exists(path))
+            {
+                //TODO: Error message
+                return;
+            }
+
+            var files = Directory.GetFiles(path);
+            ImportFiles(files);
         }
         
-        public static void RemoveFile(string filePath)
+        public static void RemoveFiles(string[] files)
         {
-            if (!string.IsNullOrEmpty(filePath) && ImportedFiles.Contains(filePath))
+            if (files == null)
+                return;
+
+            foreach (var file in files)
             {
-                ImportedFiles.Remove(filePath);
+                if (!string.IsNullOrEmpty(file) && ImportedFiles.Contains(file))
+                {
+                    ImportedFiles.Remove(file);
+                }
             }
         }
 
