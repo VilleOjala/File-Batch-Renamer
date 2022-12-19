@@ -3,12 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.IO;
 using System.Collections.Specialized;
+using System.Diagnostics;
 
 namespace FileBatchRenamer
 {
     public class Renamer : IRenamer
     {
         public List<RenameItem> RenameItems { get; private set; }
+        public string AppDataPath { get; } = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData) + "\\FileBatchRenamer";
 
         public Renamer()
         {
@@ -49,62 +51,84 @@ namespace FileBatchRenamer
             RenameItems = new List<RenameItem>(renameItems);
         }
 
-        //TODO: Also should produce a log of all the seteps
         public void Rename()
         {
-            // Check that a file still exists
-            // Check that the new name (and the resulting new path) is valid
-            // Handle the cases where duplicate new names cause clashes for files of same type in the same directory
+            var stopWatch = new Stopwatch();
+            stopWatch.Start();
 
-            foreach (var renameItem in RenameItems)
+            try
             {
-                var filePath = renameItem.FilePath;
-
-                if (!File.Exists(filePath))
+                if (!Directory.Exists(AppDataPath))
                 {
-                    //TODO: Error handling
-                    continue;
+                    Directory.CreateDirectory(AppDataPath);
+                }
+            }
+            catch (Exception e)
+            {
+                string errorMessage = "Renaming failed: An exception (" + e.GetType().ToString() + ") occured when trying to create directory '" + AppDataPath + "'. " + e.Message;
+                MessageBoxDisplayer.DisplayErrorMessageBox(errorMessage);
+                return;
+            }
+
+            string logFilePath = AppDataPath + @"\" + "RenamingLog_" + string.Format("{0:yyyy-MM-dd_HH-mm--ss-fff}", DateTime.Now) + ".txt";
+            
+            try 
+            {
+                File.Create(logFilePath);
+            }
+            catch (Exception e)
+            {
+                //TODO:
+                return;
+            }
+
+            using (var streamWriter = new StreamWriter(logFilePath))
+            {
+                string startLog = "Starting renaming...";
+                streamWriter.WriteLine(startLog);
+
+                // Check that a file still exists
+                // Check that the new name (and the resulting new path) is valid
+                // Handle the cases where duplicate new names cause clashes for files of same type in the same directory
+                foreach (var renameItem in RenameItems)
+                {
+                    var filePath = renameItem.FilePath;
+
+                    if (!File.Exists(filePath))
+                    {
+                        string errorLog = "ERROR: File '" + filePath + "' does not exist.";
+                        streamWriter.WriteLine(errorLog);
+                        continue;
+                    }
+
+                    var newName = renameItem.NewName;
+
+                    if (string.IsNullOrEmpty(newName))
+                    {
+                        string errorLog = "ERROR: The new name for file '" + filePath + "' is null or empty.";
+                        streamWriter.WriteLine(errorLog);
+                        continue;
+                    }
+
+                    var fileType = Path.GetExtension(filePath);
+                    var newNameWithExtension = newName + fileType;
+                    var newPath = Path.GetDirectoryName(filePath) + @"\" + newNameWithExtension;
+
+                    try
+                    {
+                        File.Move(filePath, newPath, overwrite: false);
+                        string log = "Renamed file '" + filePath + "' as '" + newPath + "'.";
+                        streamWriter.WriteLine(log);
+                    }
+                    catch (Exception e)
+                    {
+                        string errorLog = "ERROR: An exception (" + e.GetType().ToString() + ") occured when trying to rename file '" + filePath + "' as ' " + newPath + "'. " + e.Message;
+                        streamWriter.WriteLine(errorLog);
+                    }
                 }
 
-                var newName = renameItem.NewName;
-
-                if (string.IsNullOrEmpty(newName))
-                {
-                    //TODO: Error handling
-                    continue;
-                }
-                var fileType = Path.GetExtension(filePath);
-                var newNameWithExtension = newName + fileType;
-                var newPath = Path.GetDirectoryName(filePath) + @"\" + newNameWithExtension;
-
-                try
-                {
-                    File.Move(filePath, newPath, overwrite: false);
-                }
-                catch (FileNotFoundException e)
-                {
-
-                }
-                catch (ArgumentNullException e)
-                {
-
-                }
-                catch (UnauthorizedAccessException e)
-                {
-
-                }
-                catch (PathTooLongException e)
-                {
-
-                }
-                catch (DirectoryNotFoundException e)
-                {
-
-                }
-                catch (IOException e)
-                {
-                    Console.WriteLine(e);
-                }
+                stopWatch.Stop();
+                streamWriter.WriteLine("Finished renaming, elapsed time " + stopWatch.ElapsedMilliseconds / 1000 + "seconds.");
             }
         }
     }

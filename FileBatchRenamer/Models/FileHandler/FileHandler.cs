@@ -19,13 +19,13 @@ namespace FileBatchRenamer
             {
                 if (!File.Exists(file))
                 {
-                    //TODO: Error message
+                    string messageBoxText = "File '" + file + "' does not exist.";
+                    MessageBoxDisplayer.DisplayErrorMessageBox(messageBoxText);
                     continue;
                 }
 
                 if (ImportedFiles.Contains(file))
                 {
-                    //TODO: Notify about trying to import the same file twice
                     continue;
                 }
 
@@ -40,7 +40,8 @@ namespace FileBatchRenamer
 
             if (!Directory.Exists(path))
             {
-                //TODO: Error message
+                string messageBoxText = "Directory '" + path + "' does not exist."; 
+                MessageBoxDisplayer.DisplayErrorMessageBox(messageBoxText);
                 return;
             }
 
