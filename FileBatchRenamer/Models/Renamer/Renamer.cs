@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.IO;
-using System.Collections.Specialized;
 using System.Diagnostics;
 
 namespace FileBatchRenamer
@@ -53,9 +51,6 @@ namespace FileBatchRenamer
 
         public void Rename()
         {
-            var stopWatch = new Stopwatch();
-            stopWatch.Start();
-
             try
             {
                 if (!Directory.Exists(AppDataPath))
@@ -65,71 +60,90 @@ namespace FileBatchRenamer
             }
             catch (Exception e)
             {
-                string errorMessage = "Renaming failed: An exception (" + e.GetType().ToString() + ") occured when trying to create directory '" + AppDataPath + "'. " + e.Message;
+                string errorMessage = "Renaming failed: An exception (" + e.GetType().ToString() + ") " +
+                                      "occured when trying to create directory '" + AppDataPath + "'. " + e.Message;
+
                 MessageBoxDisplayer.DisplayErrorMessageBox(errorMessage);
                 return;
             }
 
             string logFilePath = AppDataPath + @"\" + "RenamingLog_" + string.Format("{0:yyyy-MM-dd_HH-mm--ss-fff}", DateTime.Now) + ".txt";
-            
-            try 
-            {
-                File.Create(logFilePath);
-            }
-            catch (Exception e)
-            {
-                //TODO:
-                return;
-            }
 
-            using (var streamWriter = new StreamWriter(logFilePath))
+            try
             {
-                string startLog = "Starting renaming...";
+                using var streamWriter = new StreamWriter(logFilePath);
+                var stopWatch = new Stopwatch();
+                string startLog = "Starting to rename " + RenameItems.Count + " files.";
                 streamWriter.WriteLine(startLog);
 
-                // Check that a file still exists
-                // Check that the new name (and the resulting new path) is valid
-                // Handle the cases where duplicate new names cause clashes for files of same type in the same directory
+                int successCount = 0;
+                int failCount = 0;
+                stopWatch.Start();
+
                 foreach (var renameItem in RenameItems)
                 {
-                    var filePath = renameItem.FilePath;
+                    string filePath = renameItem.FilePath;
 
                     if (!File.Exists(filePath))
                     {
                         string errorLog = "ERROR: File '" + filePath + "' does not exist.";
                         streamWriter.WriteLine(errorLog);
+                        failCount++;
                         continue;
                     }
 
-                    var newName = renameItem.NewName;
+                    string newName = renameItem.NewName;
 
                     if (string.IsNullOrEmpty(newName))
                     {
                         string errorLog = "ERROR: The new name for file '" + filePath + "' is null or empty.";
                         streamWriter.WriteLine(errorLog);
+                        failCount++;
                         continue;
                     }
 
-                    var fileType = Path.GetExtension(filePath);
-                    var newNameWithExtension = newName + fileType;
-                    var newPath = Path.GetDirectoryName(filePath) + @"\" + newNameWithExtension;
+                    string fileType = Path.GetExtension(filePath);
+                    string newNameWithExtension = newName + fileType;
+                    string newPath = Path.GetDirectoryName(filePath) + @"\" + newNameWithExtension;
 
                     try
                     {
                         File.Move(filePath, newPath, overwrite: false);
                         string log = "Renamed file '" + filePath + "' as '" + newPath + "'.";
                         streamWriter.WriteLine(log);
+                        successCount++;
                     }
                     catch (Exception e)
                     {
-                        string errorLog = "ERROR: An exception (" + e.GetType().ToString() + ") occured when trying to rename file '" + filePath + "' as ' " + newPath + "'. " + e.Message;
+                        string errorLog = "ERROR: An exception (" + e.GetType().ToString() + ") occured when trying to rename file '"
+                                                                + filePath + "' as ' " + newPath + "'. " + e.Message;
+
                         streamWriter.WriteLine(errorLog);
+                        failCount++;
                     }
                 }
 
                 stopWatch.Stop();
-                streamWriter.WriteLine("Finished renaming, elapsed time " + stopWatch.ElapsedMilliseconds / 1000 + "seconds.");
+                streamWriter.WriteLine("Renaming finished: " + successCount + " succeeded / " + failCount + " failed / " + "elapsed time "
+                                       + stopWatch.ElapsedMilliseconds / 1000f + " seconds.");
+
+                try
+                {
+                    string args = string.Format("/e, /select, \"{0}\"", logFilePath);
+                    var processStartInfo = new ProcessStartInfo("explorer", args);
+                    Process.Start(processStartInfo);
+                }
+                catch (Exception e)
+                {
+                    string errorMessage = "An exception (" + e.GetType().ToString() + ") occured when trying to open the logging folder. " + e.Message;
+                    MessageBoxDisplayer.DisplayErrorMessageBox(errorMessage);
+                }
             }
+            catch (Exception e)
+            {
+                string errorMessage = "An exception (" + e.GetType().ToString() + ") occured when trying to initialize a log file. " + e.Message;
+                MessageBoxDisplayer.DisplayErrorMessageBox(errorMessage);
+            }        
         }
     }
 }

@@ -1,16 +1,11 @@
-﻿using Microsoft.Win32;
-using System;
+﻿using System;
+using Microsoft.Win32;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
-using System.Printing;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 
 namespace FileBatchRenamer
@@ -25,6 +20,9 @@ namespace FileBatchRenamer
         private readonly ICSVParser parser;
         private readonly IFileHandler fileHandler;
         private readonly IRenamer renamer;
+
+        //TODO: Update the link once the project has a GitHub page.
+        private const string HelpURL = "https://github.com/VilleOjala";
 
         private bool hasNoImportedCSV = true;
         public bool HasNoImportedCSV
@@ -56,37 +54,55 @@ namespace FileBatchRenamer
                     return;
 
                 matchingMethod = value;
+                MatchingMethodChanged();
                 PropertyChanged(this, new PropertyChangedEventArgs(nameof(MatchingMethod)));
             }
         }
 
+        public ICommand HelpCommand { get; set; }
+        public ICommand AboutCommand { get; set; }
         public ICommand ImportFilesCommand { get; set; }
         public ICommand ImportFolderCommand { get; set; }
         public ICommand ClearSelectedFilesCommand { get; set; }
         public ICommand ClearAllFilesCommand { get; set; }
         public ICommand ImportCSVCommand { get; set; }
         public ICommand ClearCSVCommand { get; set; }
-        public ICommand MatchingMethodChangedCommand { get; set; }
         public ICommand RenameCommand { get; set; }
 
         private bool canExecuteCommands = false;
+        public bool CanExecuteCommands
+        {
+            get
+            {
+                return canExecuteCommands;
+            }
+            set
+            {
+                if (value == canExecuteCommands)
+                    return;
+
+                canExecuteCommands = value;
+                PropertyChanged(this, new PropertyChangedEventArgs(nameof(CanExecuteCommands)));
+            }
+        }
 
         public MainWindowViewModel(ICSVParser parser, IFileHandler fileHandler, IRenamer renamer)
         {
             this.parser = parser;
-            this.parser.ImportStatusChanged += CSVParser_ImportStatusChanged; // unsubscribe?
+            this.parser.ImportStatusChanged += CSVParser_ImportStatusChanged; 
             this.fileHandler = fileHandler;
             this.renamer = renamer;
             RenameItems = new ObservableCollection<RenameItem>();
+            HelpCommand = new RelayCommand(OpenHelpURL);
+            AboutCommand = new RelayCommand(DisplayApplicationInfo);
             ImportFilesCommand = new RelayCommand(ImportFiles);
             ImportFolderCommand = new RelayCommand(ImportFolder);
             ClearSelectedFilesCommand = new RelayCommand(ClearSelectedFiles);
             ClearAllFilesCommand = new RelayCommand(ClearAllFiles);
             ImportCSVCommand = new RelayCommand(ImportCSV);
             ClearCSVCommand = new RelayCommand(ClearCSV);
-            MatchingMethodChangedCommand = new RelayCommand(MatchingMethodChanged);
             RenameCommand = new RelayCommand(Rename);
-            canExecuteCommands = true;
+            CanExecuteCommands = true;
         }
 
         ~MainWindowViewModel()
@@ -94,12 +110,32 @@ namespace FileBatchRenamer
             this.parser.ImportStatusChanged -= CSVParser_ImportStatusChanged;
         }
 
+        private void OpenHelpURL()
+        {
+            try
+            {
+                var processStartInfo = new ProcessStartInfo(HelpURL) { UseShellExecute = true };
+                Process.Start(processStartInfo);
+            }
+            catch (Exception e)
+            {
+                string errorMessage = "An exception (" + e.GetType().ToString() + ") occured when trying to open " + HelpURL + ". " + e.Message;
+                MessageBoxDisplayer.DisplayErrorMessageBox(errorMessage);
+            }
+        }
+
+        private void DisplayApplicationInfo()
+        {
+            string message = "File Batch Renamer\n\nCopyright 2022, Ville Ojala.";
+            MessageBoxDisplayer.DisplayInfoMessageBox(message, "About File Batch Renamer");
+        }
+
         private void ImportFiles()
         {
-            if (!canExecuteCommands)
+            if (!CanExecuteCommands)
                 return;
             
-            canExecuteCommands = false;
+            CanExecuteCommands = false;
             var dialogue = new OpenFileDialog() { Multiselect = true };      
             var result = dialogue.ShowDialog();
 
@@ -110,15 +146,15 @@ namespace FileBatchRenamer
                 UpdateRenameItems();
             }
 
-            canExecuteCommands = true;
+            CanExecuteCommands = true;
         }
 
         private void ImportFolder()
         {
-            if (!canExecuteCommands)
+            if (!CanExecuteCommands)
                 return;
 
-            canExecuteCommands = false;
+            CanExecuteCommands = false;
             var dialogue = new System.Windows.Forms.FolderBrowserDialog();
             var result = dialogue.ShowDialog();
 
@@ -128,15 +164,22 @@ namespace FileBatchRenamer
                 UpdateRenameItems();
             }
 
-            canExecuteCommands = true;
+            CanExecuteCommands = true;
         }
 
         public void ClearSelectedFiles()
         {
-            if (SelectedRenameItems == null || SelectedRenameItems.Count == 0 || !canExecuteCommands)
+            if (!CanExecuteCommands)
                 return;
 
-            canExecuteCommands = false;
+            if (SelectedRenameItems == null || SelectedRenameItems.Count == 0)
+            {
+                string message = "No files are selected.";
+                MessageBoxDisplayer.DisplayInfoMessageBox(message);
+                return;
+            }
+
+            CanExecuteCommands = false;
             string messageBoxText = "Are you sure you want to clear the selected imported files?"; 
 
             if (MessageBoxDisplayer.DisplayConfirmationMessageBox(messageBoxText) == MessageBoxResult.Yes)
@@ -146,15 +189,22 @@ namespace FileBatchRenamer
                 UpdateRenameItems();
             }
 
-            canExecuteCommands = true;
+            CanExecuteCommands = true;
         }
 
         private void ClearAllFiles()
         {
-            if (!canExecuteCommands || fileHandler.ImportedFiles.Count == 0)
+            if (!CanExecuteCommands)
                 return;
 
-            canExecuteCommands = false;
+            if (fileHandler.ImportedFiles.Count == 0)
+            {
+                string message = "No files have been imported.";
+                MessageBoxDisplayer.DisplayInfoMessageBox(message);
+                return;
+            }
+
+            CanExecuteCommands = false;
             string messageBoxText = "Are you sure you want to clear all imported files?";
             
             if (MessageBoxDisplayer.DisplayConfirmationMessageBox(messageBoxText) == MessageBoxResult.Yes)
@@ -163,15 +213,15 @@ namespace FileBatchRenamer
                 UpdateRenameItems();
             }
 
-            canExecuteCommands = true;
+            CanExecuteCommands = true;
         }
 
         private void ImportCSV()
         {
-            if (!canExecuteCommands)
+            if (!CanExecuteCommands)
                 return;
 
-            canExecuteCommands = false;
+            CanExecuteCommands = false;
 
             if (!HasNoImportedCSV)
             {
@@ -183,7 +233,7 @@ namespace FileBatchRenamer
                 }
                 else
                 {
-                    canExecuteCommands = true;
+                    CanExecuteCommands = true;
                     return;
                 }
             }
@@ -201,22 +251,22 @@ namespace FileBatchRenamer
             }
 
             UpdateRenameItems();
-            canExecuteCommands = true;
+            CanExecuteCommands = true;
         }
 
         private void ClearCSV()
         {
-            if (!canExecuteCommands)
+            if (!CanExecuteCommands)
                 return;
 
-            if (hasNoImportedCSV)
+            if (HasNoImportedCSV)
             {
                 string infoMessage = "No CSV file has been imported.";
                 MessageBoxDisplayer.DisplayInfoMessageBox(infoMessage);
                 return;
             }
 
-            canExecuteCommands = false;
+            CanExecuteCommands = false;
             string messageBoxText = "Are you sure you want to clear the imported CSV file?"; 
             
             if (MessageBoxDisplayer.DisplayConfirmationMessageBox(messageBoxText) == MessageBoxResult.Yes)
@@ -225,26 +275,25 @@ namespace FileBatchRenamer
                 UpdateRenameItems();
             }
 
-            canExecuteCommands = true;
+            CanExecuteCommands = true;
         }
 
-        //TODO: Button needs to be disabled since there is a state?
         private void MatchingMethodChanged()
         {
-            if (!canExecuteCommands)
+            if (!CanExecuteCommands)
                 return;
 
-            canExecuteCommands = false;
+            CanExecuteCommands = false;
             UpdateRenameItems();
-            canExecuteCommands = true;
+            CanExecuteCommands = true;
         }
 
         private void Rename()
         {
-            if (!canExecuteCommands)
+            if (!CanExecuteCommands)
                 return;
 
-            canExecuteCommands = false;
+            CanExecuteCommands = false;
             string messageBoxText = "Are you sure you want to rename the imported files? " +
                                     "This action cannot be undone and both the imported files and the CSV file " +
                                     "will be automatically cleared once the operation has finished.";
@@ -252,12 +301,12 @@ namespace FileBatchRenamer
             if (MessageBoxDisplayer.DisplayConfirmationMessageBox(messageBoxText) == MessageBoxResult.Yes)
             {
                 renamer.Rename();
-                ClearAllFiles();
-                ClearCSV();
+                fileHandler.ClearAllFiles();
+                parser.ClearParseData();
                 UpdateRenameItems();
             }
 
-            canExecuteCommands = true;
+            CanExecuteCommands = true;
         }
 
         private void UpdateRenameItems()

@@ -5,11 +5,26 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FileBatchRenamer"
         mc:Ignorable="d"
-        Title="File Batch Renamer" Height="600" Width="800">
-    <Border Padding="10 20 10 20">
-        <StackPanel>
-            <Grid Height="200">
-                <DataGrid ItemsSource="{Binding RenameItems}"                        
+        Title="File Batch Renamer" Width="800" Height="600">
+    <Border Padding="10 0 10 20">
+        <DockPanel>
+            <Menu DockPanel.Dock="Top" HorizontalAlignment="Right">
+                <MenuItem Header="_?" FontSize="14">
+                    <MenuItem Header="_Help" Command="{Binding HelpCommand}"/>
+                    <MenuItem Header="_About" Command="{Binding AboutCommand}"/>
+                </MenuItem>
+            </Menu>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition/>
+                    <RowDefinition MaxHeight="30"/>
+                    <RowDefinition MaxHeight="30"/>
+                    <RowDefinition MaxHeight="30"/>
+                    <RowDefinition MaxHeight="30"/>
+                    <RowDefinition MaxHeight="26"/>
+                </Grid.RowDefinitions>
+                <DataGrid ItemsSource="{Binding RenameItems}"
+                          Grid.Row="0"
                           SelectionMode="Extended"
                           SelectionUnit="FullRow"
                           AutoGenerateColumns="False"
@@ -17,7 +32,7 @@
                           ScrollViewer.VerticalScrollBarVisibility="Auto"
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                           IsReadOnly="True" 
-                          SelectionChanged="DataGrid_SelectionChanged">
+                          SelectionChanged="DataGrid_SelectionChanged" Grid.ColumnSpan="3" Background="#FFF0F0F0">
                     <DataGrid.Columns>
                         <DataGridTextColumn Width="2*" Header="File" Binding="{Binding FilePath}">
                             <DataGridTextColumn.CellStyle>
@@ -30,44 +45,45 @@
                         <DataGridTextColumn Width="*" Header="New Name" Binding="{Binding NewName}" />
                     </DataGrid.Columns>
                 </DataGrid>
-            </Grid>
-            <Grid Margin="0 5 0 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Button Grid.Column="0" Content="Import Files" Command="{Binding ImportFilesCommand}" Margin=" 0 0 5 0" />
-                <Button Grid.Column="1" Content ="Import Folder" Command="{Binding ImportFolderCommand}" Margin="5 0 0 0" />
-            </Grid>
-            <Grid Margin="0 5 0 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Button Grid.Column="0" Content="Clear Selected Files" Command="{Binding ClearSelectedFilesCommand}" Margin="0 0 5 0" />
-                <Button Grid.Column="1" Content="Clear All Files" Command="{Binding ClearAllFilesCommand}" Margin="5 0 0 0" />
-            </Grid>
-            <Grid Margin=" 0 5 0 0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-                <Button Grid.Column="0" Content="Import CSV" Command="{Binding ImportCSVCommand}" 
+                <Grid Grid.Row="1" Margin="0 5 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Content="Import Files" Command="{Binding ImportFilesCommand}" Margin=" 0 0 5 0" />
+                    <Button Grid.Column="1" Content ="Import Folder" Command="{Binding ImportFolderCommand}" Margin="5 0 0 0" />
+                </Grid>
+                <Grid Grid.Row="2" Margin="0 5 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Content="Clear Selected Files" Command="{Binding ClearSelectedFilesCommand}" Margin="0 0 5 0" />
+                    <Button Grid.Column="1" Content="Clear All Files" Command="{Binding ClearAllFilesCommand}" Margin="5 0 0 0" />
+                </Grid>
+                <Grid Grid.Row="3" Margin=" 0 5 0 0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Content="Import CSV" Command="{Binding ImportCSVCommand}" 
                         IsEnabled="{Binding HasNoImportedCSV}" Margin="0 0 5 0" />
-                <Button Grid.Column="1" Content="Clear CSV" Command="{Binding ClearCSVCommand}" Margin="5 0 0 0" />
-            </Grid>
-            <TextBlock Padding ="0 20 0 2" Text="Matching Method"/>
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <ComboBox Grid.Column="0" ItemsSource="{local:EnumBindingSource local:MatchingMethod}" 
+                    <Button Grid.Column="1" Content="Clear CSV" Command="{Binding ClearCSVCommand}" Margin="5 0 0 0" />
+                </Grid>
+                <TextBlock Grid.Row="4" Text="Matching Method" HorizontalAlignment="Left" VerticalAlignment="Bottom" Padding="0,0,0,5"/>
+                <Grid Grid.Row="5">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <ComboBox Grid.Column="0" ItemsSource="{local:EnumBindingSource local:MatchingMethod}" 
+                          IsEnabled="{Binding CanExecuteCommands}"
                           SelectedValuePath="Value"
                           DisplayMemberPath="Description"
-                          SelectedValue="{Binding MatchingMethod, Mode=TwoWay}" Margin="0 0 5 0" />
-                <Button Grid.Column="1" Content="Rename" Command="{Binding RenameCommand}" Margin="5 0 0 0 " />
+                          SelectedValue="{Binding MatchingMethod, Mode=TwoWay}" Margin="0 0 5 0" VerticalContentAlignment="Center" />
+                    <Button Grid.Column="1" Content="Rename" Command="{Binding RenameCommand}" Margin="5 0 0 0 " />
+                </Grid>
             </Grid>
-        </StackPanel>
+        </DockPanel>
     </Border>
 </Window>

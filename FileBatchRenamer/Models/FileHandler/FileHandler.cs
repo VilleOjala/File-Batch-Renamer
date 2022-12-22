@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 using System.IO;
-using System.Diagnostics;
 
 namespace FileBatchRenamer
 {
@@ -19,15 +16,13 @@ namespace FileBatchRenamer
             {
                 if (!File.Exists(file))
                 {
-                    string messageBoxText = "File '" + file + "' does not exist.";
-                    MessageBoxDisplayer.DisplayErrorMessageBox(messageBoxText);
+                    string errorMessage = "File '" + file + "' does not exist.";
+                    MessageBoxDisplayer.DisplayErrorMessageBox(errorMessage);
                     continue;
                 }
 
                 if (ImportedFiles.Contains(file))
-                {
                     continue;
-                }
 
                 ImportedFiles.Add(file);
             }
@@ -40,8 +35,8 @@ namespace FileBatchRenamer
 
             if (!Directory.Exists(path))
             {
-                string messageBoxText = "Directory '" + path + "' does not exist."; 
-                MessageBoxDisplayer.DisplayErrorMessageBox(messageBoxText);
+                string errorMessage = "Directory '" + path + "' does not exist."; 
+                MessageBoxDisplayer.DisplayErrorMessageBox(errorMessage);
                 return;
             }
 

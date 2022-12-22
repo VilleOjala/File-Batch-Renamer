@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.IO;
 using Microsoft.VisualBasic.FileIO;
 
 namespace FileBatchRenamer
@@ -10,7 +8,7 @@ namespace FileBatchRenamer
     {
         public Dictionary<string, string> ParseData { get; private set; }
 
-        private bool isImported;
+        private bool isImported = false;
         public bool IsImported
         {
             get
@@ -78,11 +76,11 @@ namespace FileBatchRenamer
             if (duplicates.Count > 0)
             {
                 errorMessage = "Importing CSV failed: duplicate search names are not allowed.\n\n" +
-                               "Found search names with duplicates: ";
+                               "Search names with duplicates: \n\n";
 
                 foreach (var duplicate in duplicates)
                 {
-                    errorMessage += duplicates.ToString() + " ";
+                    errorMessage += duplicate.ToString() + "\n";
                 }
 
                 return false;
