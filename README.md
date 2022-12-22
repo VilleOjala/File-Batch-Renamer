@@ -4,7 +4,7 @@ A batch renaming tool with a basic GUI (WPF, .NET 6.0). The algorithm operates w
 
 The intended use case for this tool is in the context of a commonly occuring game audio voiceover pipeline in which each dialogue line in the game’s dialogue system has an (often compex) unique ID which can be used to retrieve the corresponding voiceover file by having the file name match the ID exactly. However, during voiceover recording sessions each recorded file is usually given a much simpler temporary unique name by the recordist, since manual typing of long and complex IDs would obviously be way too time-consuming and error-prone. Simplified names are also added to a spreadsheet containing the actual unique IDs in an adjacent column. Consequently, a robust and time-efficient method is needed for replacing the temporary file names with the correct technical IDs using the spreadsheet data, as games routinely contain tens of thousands of lines of dialogue.
 
-[Download build](https://drive.google.com/file/d/1xPQhf0ZAHKpUADSg-Iwq6NPjaxnzI5XL/view?usp=share_link)
+[Download build](https://drive.google.com/file/d/1fZIX4lORc2bFONvnGHx9fyHifZUyQSxu/view?usp=share_link)
 
 # How to use
 
