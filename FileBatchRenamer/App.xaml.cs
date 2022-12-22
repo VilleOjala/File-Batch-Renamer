@@ -1,4 +1,10 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿/*
+File Batch Renamer by Ville Ojala
+GNU General Public License, version 3.0
+https://github.com/VilleOjala/File-Batch-Renamer
+*/
+
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Windows;

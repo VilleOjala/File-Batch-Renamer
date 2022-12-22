@@ -1,4 +1,10 @@
-﻿<Window x:Class="FileBatchRenamer.MainWindow"
+﻿<!--
+File Batch Renamer by Ville Ojala
+GNU General Public License, version 3.0
+https://github.com/VilleOjala/File-Batch-Renamer
+-->
+    
+<Window x:Class="FileBatchRenamer.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"

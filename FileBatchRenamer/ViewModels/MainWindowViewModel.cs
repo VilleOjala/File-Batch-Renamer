@@ -1,4 +1,10 @@
-﻿using System;
+﻿/*
+File Batch Renamer by Ville Ojala
+GNU General Public License, version 3.0
+https://github.com/VilleOjala/File-Batch-Renamer
+*/
+
+using System;
 using Microsoft.Win32;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -22,7 +28,7 @@ namespace FileBatchRenamer
         private readonly IRenamer renamer;
 
         //TODO: Update the link once the project has a GitHub page.
-        private const string HelpURL = "https://github.com/VilleOjala";
+        private const string HelpURL = "https://github.com/VilleOjala/File-Batch-Renamer";
 
         private bool hasNoImportedCSV = true;
         public bool HasNoImportedCSV

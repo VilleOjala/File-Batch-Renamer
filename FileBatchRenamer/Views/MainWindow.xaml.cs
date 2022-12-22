@@ -1,4 +1,10 @@
-﻿using System.Collections.Generic;
+﻿/*
+File Batch Renamer by Ville Ojala
+GNU General Public License, version 3.0
+https://github.com/VilleOjala/File-Batch-Renamer
+*/
+
+using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
